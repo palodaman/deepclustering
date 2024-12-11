@@ -2,24 +2,35 @@ import pandas as pd
 import numpy as np
 import scanpy as sc
 from sklearn.preprocessing import StandardScaler
+import h5py
 
-def load_data(filepath, format = 'h5'):
+def load_data(filepath, format):
+    data = None
     if format == 'h5':
-        data = sc.read_10x_h5(filepath, genome = 'X')
-
-        # with h5py.File(filepath, 'r') as hf:
-        #     # print("Heys in file:", hf.keys)
-        #     read = lambda name, obj : print(name)
-        #     hf.visititems(read)
-        #     print("")
+        print("inside h5 format")
+        try:
+            with h5py.File(filepath, 'r') as hf:
+                print("Keys in file:", list(hf.keys()))
+                #extract 'X' dataset
+                data = hf['X'][:] 
+                labels = hf['Y'][:]
+        except Exception as e:
+            print(f"Error reading h5 file: {e}")
+            return None
 
     elif format == 'csv':
+        print("inside csv format")
         data = pd.read_csv(
-            filepath_or_buffer = filepath, 
-            index_col = 0
+            filepath_or_buffer=filepath, 
+            index_col=0
         )
+    else:
+        print("Format not supported")
     
-    return data
+    if data is None:
+        print("data wasnt loadded")
+        
+    return data, labels
 
 def preprocess(data, should_norm = True, should_scale = True,
                should_log = True, n_top_genes = 2000):
@@ -28,7 +39,7 @@ def preprocess(data, should_norm = True, should_scale = True,
 
         if should_log:
              # Not sure why log1p vs log, but they use log1p
-             data = np.log1p()
+             data = np.log1p(data)
 
         # If we have more than our limit, we need to cut down.
         # This chooses the genes with highest variance,
@@ -41,7 +52,7 @@ def preprocess(data, should_norm = True, should_scale = True,
         # This is "library size normalization", hopefully.
         if should_norm:
              sizes = np.sum(data, axis = 1)
-             data = data / sum[:, None] * np.median(sizes)
+             data = data / sizes[:, None] * np.median(sizes)
             
         if should_scale:
              scaler = StandardScaler()
@@ -52,4 +63,6 @@ def preprocess(data, should_norm = True, should_scale = True,
         return data, scaler
 
 
-# d = load_data('scDeepClustering_Sample_Data/mouse_bladder_cell_select_2100.h5', 'h5')
+d, e = load_data('scDeepClustering_Sample_Data/mouse_bladder_cell_select_2100.h5', 'h5')
+print(d)
+print("this is Y", e)
