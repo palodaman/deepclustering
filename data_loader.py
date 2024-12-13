@@ -3,13 +3,11 @@ import numpy as np
 import scanpy as sc
 from sklearn.preprocessing import StandardScaler
 import h5py
-import torch
 
 def load_data(filepath, format):
     data = None
     labels = None 
     if format == 'h5':
-        print("inside h5 format")
         try:
             with h5py.File(filepath, 'r') as hf:
                 print("Keys in file:", list(hf.keys()))
@@ -64,6 +62,6 @@ def preprocess(data, should_norm = True, should_scale = True,
 
 
 #testing
-d, e = load_data('scDeepClustering_Sample_Data/mouse_bladder_cell_select_2100.h5', 'h5')
-print(d)
-print("this is Y", e)
+# d, e = load_data('scDeepClustering_Sample_Data/mouse_bladder_cell_select_2100.h5', 'h5')
+# print(d)
+# print("this is Y", e)
